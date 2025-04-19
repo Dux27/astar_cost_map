@@ -11,10 +11,9 @@ import time  # Added for timing the execution
 GRID_SIZE = 0.1            # Size of each grid cell
 DISTANCE_RATE = 2.5        # Rate at which distance affects cost
 MAX_COST = 5.0              # Maximum cost value
-MAX_OBSTACLE_DISTANCE = 3.0 # Maximum distance to consider an obstacle (adjust this as needed)
+MAX_OBSTACLE_DISTANCE = 3.0 # Maximum distance to consider an obstacle is cost calculation
 
 def load_obstacles(file_path):
-    """Load obstacle data from a CSV file"""
     if not os.path.exists(file_path):
         print(f"File {file_path} does not exist.")
         exit(1)
@@ -42,10 +41,14 @@ def generate_grid(hull_points, grid_size):
     """Generate grid points inside the convex hull"""
     min_x, min_y = np.min(hull_points, axis=0)
     max_x, max_y = np.max(hull_points, axis=0)
+    
     x_coords = np.arange(min_x, max_x + grid_size, grid_size)
     y_coords = np.arange(min_y, max_y + grid_size, grid_size)
+    
     xv, yv = np.meshgrid(x_coords, y_coords)
+    
     grid_points = np.column_stack([xv.ravel(), yv.ravel()])
+    
     path = Path(hull_points)
     return grid_points[path.contains_points(grid_points)]
 
@@ -73,7 +76,7 @@ def add_costs(obstacles, points_inside_convex):
 
 def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
     """Plot the obstacles, convex hull, and the cost map with gradient color scale"""
-    fig, ax = plt.subplots()  # Create figure and axes objects
+    fig, ax = plt.subplots()  
 
     # Plot the convex hull boundaries
     for edges in hull.simplices:
@@ -88,10 +91,10 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
     # Plot points inside convex hull with color gradient based on cost values
     for point in points_with_cost:
         x, y, cost = point
-        color = cmap(norm(cost))  # RdYlGn_r colormap (red to green)
+        color = cmap(norm(cost)) # Convert cost to color
         ax.scatter(x, y, color=color, s=5)
 
-    # Plot obstacles as blue dots
+    # Plot obstacles with different colors based on their type
     for obstacle in obstacles:
         if obstacle[2] == "red_buoy":
             ax.plot(obstacle[0], obstacle[1], 'ro', label='Obstacle')
@@ -102,10 +105,10 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
 
     # Colorbar setup
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-    sm.set_array([])  # Set an empty array to the ScalarMappable
+    sm.set_array([])  
     fig.colorbar(sm, ax=ax, label='Cost')
 
-    end_time = time.time()  # End timing
+    end_time = time.time()  # End timing for execution time measurement
     print(f"Execution time: {end_time - start_time:.2f} seconds")
 
     ax.set_xlabel('X Coordinate')
@@ -114,7 +117,7 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
     plt.show()
 
 if __name__ == "__main__":
-    start_time = time.time()  # Start timing
+    start_time = time.time()  # Start timing for execution time measurement
 
     main_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(main_dir, "config", "obstacles.csv")
