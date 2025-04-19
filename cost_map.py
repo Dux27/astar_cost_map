@@ -2,14 +2,13 @@ import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from scipy.spatial import ConvexHull
 from matplotlib.colors import LinearSegmentedColormap
-import math
 import numpy as np
 import os
 import csv
 import time  # Added for timing the execution
 
-GRID_SIZE = 0.3            # Size of each grid cell
-DISTANCE_RATE = 2.5        # Rate at which distance affects cost
+GRID_SIZE = 0.2             # Size of each grid cell
+DISTANCE_RATE = 2.5         # Rate at which distance affects cost
 MAX_COST = 5.0              # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 3.0 # Maximum distance to consider an obstacle is cost calculation
 
@@ -67,9 +66,9 @@ def add_costs(obstacles, points_inside_convex):
         # Create a list of distances to all obstacles
         dx = obstacle_positions[:, 0] - points_with_cost[i, 0]
         dy = obstacle_positions[:, 1] - points_with_cost[i, 1]
-        distances = np.sqrt(dx**2 + dy**2)  
+        distances = np.sqrt(dx**2 + dy**2) # Euclidean distance between gridpoints and obstacles
         
-        nearby_obstacles = distances[distances <= MAX_OBSTACLE_DISTANCE]  # Only consider obstacles within range
+        nearby_obstacles = distances[distances <= MAX_OBSTACLE_DISTANCE] 
         if nearby_obstacles.size > 0:
             min_distance = np.min(nearby_obstacles)
             cost = calculate_cost(min_distance)
@@ -95,7 +94,9 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
     for point in points_with_cost:
         x, y, cost = point
         color = cmap(norm(cost)) # Convert cost to color
-        ax.scatter(x, y, color=color, s=5)
+        SCALE_FACTOR = 50
+        marker_size = int(5 + (GRID_SIZE * SCALE_FACTOR))
+        ax.scatter(x, y, color=color, s=marker_size)
 
     # Plot obstacles with different colors based on their type
     for obstacle in obstacles:
