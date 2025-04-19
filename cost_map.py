@@ -8,7 +8,7 @@ import os
 import csv
 import time  # Added for timing the execution
 
-GRID_SIZE = 0.1            # Size of each grid cell
+GRID_SIZE = 0.3            # Size of each grid cell
 DISTANCE_RATE = 2.5        # Rate at which distance affects cost
 MAX_COST = 5.0              # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 3.0 # Maximum distance to consider an obstacle is cost calculation
@@ -64,8 +64,11 @@ def add_costs(obstacles, points_inside_convex):
 
     # Calculate the distance from each point to nearby obstacles and apply cost
     for i in range(len(points_with_cost)):
-        # Find obstacles within a certain distance range
-        distances = np.linalg.norm(obstacle_positions - points_with_cost[i, :2], axis=1)
+        # Create a list of distances to all obstacles
+        dx = obstacle_positions[:, 0] - points_with_cost[i, 0]
+        dy = obstacle_positions[:, 1] - points_with_cost[i, 1]
+        distances = np.sqrt(dx**2 + dy**2)  
+        
         nearby_obstacles = distances[distances <= MAX_OBSTACLE_DISTANCE]  # Only consider obstacles within range
         if nearby_obstacles.size > 0:
             min_distance = np.min(nearby_obstacles)
