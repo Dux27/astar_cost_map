@@ -8,14 +8,17 @@ import os
 import csv
 import time  
 
-GRID_SIZE = 0.2             # Size of each grid cell
+### CONSTANTS
+GRID_SIZE = 0.3             # Size of each grid cell
 DISTANCE_RATE = 2.5         # Rate at which distance affects cost
 MAX_COST = 5.0              # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 4.0 # Maximum distance to consider an obstacle in cost calculation
 
+### GLOBALS
 """Start point is where Task2 starts, and finish point is dynamic and is calculated based on the last red and green buoys detected"""
 Start_point = np.array([0, 0]) # Point where Task2 starts (hopefully I guess)
 Finish_point = np.array([0, 0]) # Point where Task2 ends (probably I guess)
+points_with_cost = np.array([]) # Points with cost values (probably I guess)
 
 def load_obstacles(file_path):
     if not os.path.exists(file_path):
@@ -106,18 +109,22 @@ def create_path_from_buoys(obstacles, buoy_type: str):
     
     return buoy_path
 
-def find_finish_gate():
+def find_gate(gate_name: str):
     red_path = create_path_from_buoys(obstacles, "red_buoy")
     green_path = create_path_from_buoys(obstacles, "green_buoy")
-    last_red = red_path[-1]
-    last_green = green_path[-1]
+    if gate_name.lower() == "first":
+        last_red = red_path[0]
+        last_green = green_path[0]
+    elif gate_name.lower() == "last":
+        last_red = red_path[-1]
+        last_green = green_path[-1]
     
     x = (last_red[0] + last_green[0])/2.0
     y = (last_red[1] + last_green[1])/2.0
     
     return x, y
 
-def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
+def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, finish_point):
     """Plot the obstacles, convex hull, and the cost map with gradient color scale"""
     fig, ax = plt.subplots()  
     # Plot the convex hull boundaries
@@ -151,29 +158,35 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost):
     green_path = create_path_from_buoys(obstacles, "green_buoy")
     ax.plot(red_path[:, 0], red_path[:, 1], color='red', linestyle='--', label='Red Path', linewidth=2)
     ax.plot(green_path[:, 0], green_path[:, 1], color='green', linestyle='--', label='Green Path', linewidth=2)
+    
     # Plot finish gate
-    finish_x, finish_y = find_finish_gate()
-    Finish_point = np.array([finish_x, finish_y]) # Global variable assignment
+    finish_x, finish_y = Finish_point
     ax.plot(finish_x, finish_y, 'bo', label='Finish Gate', markersize=10)
 
     end_time = time.time()  # End timing for execution time measurement
-    print(f"Execution time: {end_time - start_time:.2f} seconds")
+    print(f"Cost map execution time: {end_time - start_time:.2f} seconds")
     
     ax.set_xlabel('X Coordinate')
     ax.set_ylabel('Y Coordinate')
     ax.set_title('Cost Map')
     plt.show()
 
-if __name__ == "__main__":
-    start_time = time.time()  # Start timing for execution time measurement
+### RUN THE CODE
+#start_time = time.time()  # Start timing for execution time measurement (only working with the plot function)
+print("Generating cost map...")
 
-    main_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(main_dir, "config", "obstacles_2.csv")
-    
-    obstacles = load_obstacles(file_path)
-    coordinates = np.array([[x, y] for x, y, _ in obstacles])
-    hull, hull_points = compute_convex_hull(coordinates)
-    points_inside_convex = generate_grid(hull_points, GRID_SIZE)
-    points_with_cost = add_costs(obstacles, points_inside_convex)
+main_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(main_dir, "config", "obstacles_1.csv")
 
-    plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost)
+obstacles = load_obstacles(file_path)
+coordinates = np.array([[x, y] for x, y, _ in obstacles])
+hull, hull_points = compute_convex_hull(coordinates)
+points_inside_convex = generate_grid(hull_points, GRID_SIZE)
+
+Start_point = find_gate("first")  
+Finish_point = find_gate("last")  
+points_with_cost = add_costs(obstacles, points_inside_convex)
+
+print("Cost map generated successfully.")
+# Plot the results
+#plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, Finish_point)
