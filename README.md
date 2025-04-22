@@ -24,12 +24,6 @@ python PathFinderA_star.py
 ```
 
 ### Output
-
-![Figure\_1]\(https\://github.com/user-attachments/assets/1ea24232-0bc8-45ce-b86d-e57951544711)
-
-![Figure\_2]\(https\://github.com/user-attachments/assets/4a2f8ce0-9183-4b19-98ab-a9a64afbd885)
-
-## [License](https://github.com/user-attachments/assets/4a2f8ce0-9183-4b19-98ab-a9a64afbd885\)License)
-
-This project is open-source and available under the MIT License.
+![Figure_1](https://github.com/user-attachments/assets/6a0871ea-3a3e-4cd2-948a-fe5d81df9400)
+![Figure_2](https://github.com/user-attachments/assets/aa64aa6b-6941-4bb9-bc2a-16524d7ff496)
 
