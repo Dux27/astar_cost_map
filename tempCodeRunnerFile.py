@@ -1,1 +1,0 @@
-# Set ticks at the minimum and maximum values
