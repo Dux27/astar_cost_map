@@ -13,12 +13,6 @@ def find_nearest_point(point, points_with_cost):
     nearest_index = np.argmin(distances)
     return points_with_cost[nearest_index, :2]  # Return the nearest [x, y] coordinates
 
-# Function to adjust the cost: Boost the obstacles by multiplying the cost by a large factor
-def adjust_cost(cost, obstacle_threshold=10, boost_factor=1000):
-    if cost > obstacle_threshold:  # If the cost is above a certain threshold, treat it as an obstacle
-        return boost_factor * cost  # Significantly increase the cost for obstacles
-    return cost  # Return the original cost if it's a free space
-
 # A* algorithm to find a path with maximum distance constraint
 def a_star(start, goal, points_with_cost, max_distance):
     # Define open and closed lists (priority queue)
@@ -66,9 +60,6 @@ def a_star(start, goal, points_with_cost, max_distance):
             neighbor_row = points_with_cost[np.all(points_with_cost[:, :2] == neighbor, axis=1)][0]
             neighbor_cost = neighbor_row[2]  # Cost is in the third column
             
-            # Adjust the cost to boost obstacles
-            adjusted_cost = adjust_cost(neighbor_cost)
-            
             # Calculate tentative g score for the neighbor
             tentative_g_score = g_score[tuple(current)] + euclidean_distance(current, neighbor)
 
@@ -76,7 +67,7 @@ def a_star(start, goal, points_with_cost, max_distance):
                 # This is a better path to the neighbor
                 came_from[neighbor_tuple] = current
                 g_score[neighbor_tuple] = tentative_g_score
-                f_score[neighbor_tuple] = g_score[neighbor_tuple] + euclidean_distance(neighbor, goal) + adjusted_cost
+                f_score[neighbor_tuple] = g_score[neighbor_tuple] + euclidean_distance(neighbor, goal) + neighbor_cost
                 
                 # Add the neighbor to the open list if not already in open list
                 if not any(neighbor_tuple == n[1] for n in open_list):  # Avoid duplicates
@@ -110,13 +101,13 @@ if __name__ == "__main__":
     if path:
         print(f"Path found: {path}")
         path_x, path_y = zip(*path)
-        plt.plot(path_x, path_y, color='blue', label='Path')
+        plt.plot(path_x, path_y, color='red', label='Path')
     else:
         print("No path found.")
 
     # Visualize all points and the start/goal positions
     plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap="viridis", label='Cost Points')
-    plt.scatter(*start_nearest, color='green', label='Start')
+    plt.scatter(*start_nearest, color='red', label='Start')
     plt.scatter(*goal_nearest, color='red', label='Goal')
     plt.legend()
     plt.show()

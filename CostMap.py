@@ -9,10 +9,11 @@ import csv
 import time  
 
 ### CONSTANTS
-GRID_SIZE = 0.3             # Size of each grid cell
-DISTANCE_RATE = 2.5         # Rate at which distance affects cost
-MAX_COST = 5.0              # Maximum cost value
-MAX_OBSTACLE_DISTANCE = 4.0 # Maximum distance to consider an obstacle in cost calculation
+GRID_SIZE = 0.3                 # Size of each grid cell
+DISTANCE_RATE = 2.5             # Rate at which distance affects cost
+MAX_COST = 5.0                  # Maximum cost value
+MAX_OBSTACLE_DISTANCE = 4.0     # Maximum distance to consider an obstacle in cost calculation
+COST_SCALING_EXPONENT = 3.0     # Exponent for cost scaling 
 
 ### GLOBALS
 """Start point is where Task2 starts, and finish point is dynamic and is calculated based on the last red and green buoys detected"""
@@ -124,7 +125,17 @@ def find_gate(gate_name: str):
     
     return x, y
 
-def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, finish_point):
+def cost_scaling(points_with_cost):
+    """
+    Scale the cost values to increase the diffrent between the lowest and the highest 
+    Its for edge cases where the nagivation channel is taking a hard turn and the lower cost path is going to be thru the obstacles
+    """
+    for i in range(len(points_with_cost)):
+        points_with_cost[i][2] = points_with_cost[i][2] ** COST_SCALING_EXPONENT
+    
+    return points_with_cost
+
+def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, finish_point):
     """Plot the obstacles, convex hull, and the cost map with gradient color scale"""
     fig, ax = plt.subplots()  
     # Plot the convex hull boundaries
@@ -160,8 +171,10 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, fini
     ax.plot(green_path[:, 0], green_path[:, 1], color='green', linestyle='--', label='Green Path', linewidth=2)
     
     # Plot finish gate
+    start_x, start_y = Start_point
     finish_x, finish_y = Finish_point
     ax.plot(finish_x, finish_y, 'bo', label='Finish Gate', markersize=10)
+    ax.plot(start_x, start_y, 'bo', label='Start Gate', markersize=10)
 
     end_time = time.time()  # End timing for execution time measurement
     print(f"Cost map execution time: {end_time - start_time:.2f} seconds")
@@ -172,7 +185,7 @@ def plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, fini
     plt.show()
 
 ### RUN THE CODE
-#start_time = time.time()  # Start timing for execution time measurement (only working with the plot function)
+start_time = time.time()  # Start timing for execution time measurement (only working with the plot function)
 print("Generating cost map...")
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -189,4 +202,6 @@ points_with_cost = add_costs(obstacles, points_inside_convex)
 
 print("Cost map generated successfully.")
 # Plot the results
-#plot_obstacles_and_hull(obstacles, coordinates, hull, points_with_cost, Finish_point)
+plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Finish_point)
+
+points_with_cost = cost_scaling(points_with_cost)
