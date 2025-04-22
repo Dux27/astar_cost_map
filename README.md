@@ -1,6 +1,6 @@
 # A\* Pathfinding with Cost Map
 
-This project integrates a cost-based map with the A\* pathfinding algorithm written in python to find optimal paths while avoiding high-cost areas and obstacles.
+This project integrates a cost-based map with the A* pathfinding algorithm written in Python to find optimal paths while avoiding high-cost areas and obstacles. It is designed for Task 2 of the RoboBoat competition, where a surface vehicle navigates through a channel made of red and green buoys, avoiding obstacles (yellow buoys).
 
 ## Requirements
 
