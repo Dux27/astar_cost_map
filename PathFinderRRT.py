@@ -7,22 +7,18 @@ import sys
 repo_path = r"C:\Users\filip\Desktop\infinity\PythonRobotics\PathPlanning\RRT"
 sys.path.append(repo_path)
 
-# Import the RRT module
 from rrt import RRT
 
 print("Generating path...")
 
-cost_points = np.array(points_with_cost)
-
-# Start and goal points
 start = Start_point
 goal = Finish_point
 
 class ConstantDistanceRRT(RRT):
     def __init__(self, cost_points, step_size, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cost_points = cost_points  # Points with costs
-        self.step_size = step_size  # Constant step size between points
+        self.cost_points = points_with_cost 
+        self.step_size = step_size 
 
     def get_cost(self, point):
         """Returns the cost of a given point by finding the closest cost point"""

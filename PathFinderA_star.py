@@ -1,19 +1,22 @@
 import numpy as np
 import heapq
 import matplotlib.pyplot as plt
-from CostMap import Start_point, Finish_point, points_with_cost  # Importing the cost map, start, and finish points
+from matplotlib.colors import LinearSegmentedColormap
+from CostMap import Start_point, Goal_point, points_with_cost, GRID_SIZE, MAX_COST
+import time
 
-# Euclidean distance function
+### CONSTANTS
+MAX_STEP_SIZE = 0.3  # Maximum step size for the pathfinding algorithm
+
 def euclidean_distance(point1, point2):
     return np.linalg.norm(np.array(point1) - np.array(point2))
 
-# Find the nearest point in the cost points array
 def find_nearest_point(point, points_with_cost):
+    """Find the nearest point in the cost points array for start and finish point to be on the grid"""
     distances = np.linalg.norm(points_with_cost[:, :2] - point, axis=1)
     nearest_index = np.argmin(distances)
-    return points_with_cost[nearest_index, :2]  # Return the nearest [x, y] coordinates
+    return points_with_cost[nearest_index, :2]
 
-# A* algorithm to find a path with maximum distance constraint
 def a_star(start, goal, points_with_cost, max_distance):
     # Define open and closed lists (priority queue)
     open_list = []
@@ -73,41 +76,57 @@ def a_star(start, goal, points_with_cost, max_distance):
                 if not any(neighbor_tuple == n[1] for n in open_list):  # Avoid duplicates
                     heapq.heappush(open_list, (f_score[neighbor_tuple], neighbor_tuple))
 
-    return None  # Return None if no path is found
+    return None  # No path found
 
-# Example usage of the A* algorithm
-if __name__ == "__main__":
-    # Use the imported points_with_cost, Start_point, and Finish_point from the CostMap
-    start = Start_point
-    goal = Finish_point
-
-    print(f"Start: {start}, Goal: {goal}")
-    print("Running A* algorithm...")
-
-    # Find the nearest point in points_with_cost for the start and goal
-    start_nearest = find_nearest_point(start, points_with_cost)
-    goal_nearest = find_nearest_point(goal, points_with_cost)
-
-    print(f"Start point adjusted to: {start_nearest}")
-    print(f"Goal point adjusted to: {goal_nearest}")
-
-    # Define the maximum allowed distance between consecutive nodes
-    max_distance = 1.0  # Adjust this value based on your requirements
-
-    # Find the path using A* algorithm
-    path = a_star(start_nearest, goal_nearest, points_with_cost, max_distance)
-
-    # Visualize the path
+def plot_cost_map_with_path(points_with_cost, path=None):
+    # Plot the path
     if path:
-        print(f"Path found: {path}")
         path_x, path_y = zip(*path)
         plt.plot(path_x, path_y, color='red', label='Path')
     else:
         print("No path found.")
+    
+    # Setup color map
+    cmap = LinearSegmentedColormap.from_list("cyan_black", ["cyan", "black"])
+    # Normalize the cost values to fit within the 0 to 1 range
+    norm = plt.Normalize(vmin=0, vmax=MAX_COST) 
+    
+    # Plot colorbar
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    sm.set_array([])  
+    ax = plt.gca()  
+    cbar = plt.colorbar(sm, ax=ax, label='Cost', orientation='vertical')
+    cbar.set_ticks([0, MAX_COST])  # Set ticks at the minimum and maximum values
+    cbar.set_ticklabels(['Low', 'High'])  # Label the ticks as "Low" and "High"
 
-    # Visualize all points and the start/goal positions
-    plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap="viridis", label='Cost Points')
+    # Plot the cost map
+    plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap=cmap, label='Cost Points')
     plt.scatter(*start_nearest, color='red', label='Start')
     plt.scatter(*goal_nearest, color='red', label='Goal')
-    plt.legend()
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.title('Cost Map with A* Path')
     plt.show()
+    
+if __name__ == "__main__":
+    start_time = time.time()  # Start timing for execution time measurement
+    
+    if MAX_STEP_SIZE <= GRID_SIZE:
+        raise ValueError("MAX_STEP_SIZE must be greater than GRID_SIZE to ensure proper pathfinding.")
+
+    print(f"Start: [{Start_point[0]}, {Start_point[1]}], Goal: [{Goal_point[0]}, {Goal_point[1]}]")
+    print("Running A* algorithm...")    
+    
+    # Find nearest points in the cost points array for start and goal
+    start_nearest = find_nearest_point(Start_point, points_with_cost)
+    goal_nearest = find_nearest_point(Goal_point, points_with_cost)
+    print(f"Start point adjusted to: {start_nearest}")
+    print(f"Goal point adjusted to: {goal_nearest}")
+
+    path = a_star(start_nearest, goal_nearest, points_with_cost, MAX_STEP_SIZE)
+    
+    end_time = time.time()  # End timing for execution time measurement
+    print("A* algorithm completed.")
+    print(f"Path finding execution time: {end_time - start_time:.3f} seconds")
+    
+    plot_cost_map_with_path(points_with_cost, path)

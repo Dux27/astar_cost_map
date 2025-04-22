@@ -1,2 +1,1 @@
-
-        max_iter=300
+# Set ticks at the minimum and maximum values

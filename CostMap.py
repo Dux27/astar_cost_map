@@ -9,7 +9,7 @@ import csv
 import time  
 
 ### CONSTANTS
-GRID_SIZE = 0.3                 # Size of each grid cell
+GRID_SIZE = 0.2                # Size of each grid cell
 DISTANCE_RATE = 2.5             # Rate at which distance affects cost
 MAX_COST = 5.0                  # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 4.0     # Maximum distance to consider an obstacle in cost calculation
@@ -18,7 +18,7 @@ COST_SCALING_EXPONENT = 3.0     # Exponent for cost scaling
 ### GLOBALS
 """Start point is where Task2 starts, and finish point is dynamic and is calculated based on the last red and green buoys detected"""
 Start_point = np.array([0, 0]) # Point where Task2 starts (hopefully I guess)
-Finish_point = np.array([0, 0]) # Point where Task2 ends (probably I guess)
+Goal_point = np.array([0, 0]) # Point where Task2 ends (probably I guess)
 points_with_cost = np.array([]) # Points with cost values (probably I guess)
 
 def load_obstacles(file_path):
@@ -128,7 +128,7 @@ def find_gate(gate_name: str):
 def cost_scaling(points_with_cost):
     """
     Scale the cost values to increase the diffrent between the lowest and the highest 
-    Its for edge cases where the nagivation channel is taking a hard turn and the lower cost path is going to be thru the obstacles
+    Its for edge cases where the nagivation channel is taking a hard turn and the lower cost path is going to be through the obstacles
     """
     for i in range(len(points_with_cost)):
         points_with_cost[i][2] = points_with_cost[i][2] ** COST_SCALING_EXPONENT
@@ -143,8 +143,8 @@ def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, f
         ax.plot(coordinates[edges, 0], coordinates[edges, 1], color='black', linewidth=1)
     # Normalize the cost values to fit within the 0 to 1 range
     norm = plt.Normalize(vmin=0, vmax=MAX_COST) 
-    # Create a colormap from dark blue to light grey
-    cmap = LinearSegmentedColormap.from_list("cyan_orange", ["cyan", "black"])
+    # Create a colormap from black to cyan
+    cmap = LinearSegmentedColormap.from_list("cyan_black", ["cyan", "black"])
     # Plot points inside convex hull with color gradient based on cost values
     for point in points_with_cost:
         x, y, cost = point
@@ -172,20 +172,16 @@ def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, f
     
     # Plot finish gate
     start_x, start_y = Start_point
-    finish_x, finish_y = Finish_point
-    ax.plot(finish_x, finish_y, 'bo', label='Finish Gate', markersize=10)
+    goal_x, goal_y = Goal_point
+    ax.plot(goal_x, goal_y, 'bo', label='Finish Gate', markersize=10)
     ax.plot(start_x, start_y, 'bo', label='Start Gate', markersize=10)
-
-    end_time = time.time()  # End timing for execution time measurement
-    print(f"Cost map execution time: {end_time - start_time:.2f} seconds")
-    
     ax.set_xlabel('X Coordinate')
     ax.set_ylabel('Y Coordinate')
     ax.set_title('Cost Map')
     plt.show()
 
 ### RUN THE CODE
-start_time = time.time()  # Start timing for execution time measurement (only working with the plot function)
+start_time = time.time()  # Start timing for execution time measurement 
 print("Generating cost map...")
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -197,11 +193,14 @@ hull, hull_points = compute_convex_hull(coordinates)
 points_inside_convex = generate_grid(hull_points, GRID_SIZE)
 
 Start_point = find_gate("first")  
-Finish_point = find_gate("last")  
+Goal_point = find_gate("last")  
 points_with_cost = add_costs(obstacles, points_inside_convex)
 
+end_time = time.time()  # End timing for execution time measurement
 print("Cost map generated successfully.")
+print(f"Cost map execution time: {end_time - start_time:.3f} seconds")
+
 # Plot the results
-plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Finish_point)
+plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Goal_point)
 
 points_with_cost = cost_scaling(points_with_cost)
