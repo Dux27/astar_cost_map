@@ -7,9 +7,12 @@ import numpy as np
 import os
 import csv
 import time  
+from mpl_toolkits.mplot3d import Axes3D  # Import for 3D plotting
+
+file_path = "obstacles_2.csv"  
 
 ### CONSTANTS
-GRID_SIZE = 0.2                # Size of each grid cell
+GRID_SIZE = 0.1               # Size of each grid cell
 DISTANCE_RATE = 2.5             # Rate at which distance affects cost
 MAX_COST = 5.0                  # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 4.0     # Maximum distance to consider an obstacle in cost calculation
@@ -17,9 +20,9 @@ COST_SCALING_EXPONENT = 3.0     # Exponent for cost scaling
 
 ### GLOBALS
 """Start point is where Task2 starts, and finish point is dynamic and is calculated based on the last red and green buoys detected"""
-Start_point = np.array([0, 0]) # Point where Task2 starts (hopefully I guess)
-Goal_point = np.array([0, 0]) # Point where Task2 ends (probably I guess)
-points_with_cost = np.array([]) # Points with cost values (probably I guess)
+Start_point = np.array([0, 0])  # Point where Task2 starts (hopefully I guess)
+Goal_point = np.array([0, 0])   # Point where Task2 ends (probably I guess)
+points_with_cost = np.array([]) # Points with cost values 
 
 def load_obstacles(file_path):
     if not os.path.exists(file_path):
@@ -180,12 +183,34 @@ def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, f
     ax.set_title('Cost Map')
     plt.show()
 
+def plot_3d_cost_map(points_with_cost):
+    """Plot a 3D graph for points_with_cost with X, Y, and cost."""
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    
+    x = points_with_cost[:, 0]
+    y = points_with_cost[:, 1]
+    z = points_with_cost[:, 2]
+    
+    # Create a colormap from black to cyan
+    cmap = LinearSegmentedColormap.from_list("cyan_black", ["cyan", "black"])
+    scatter = ax.scatter(x, y, z, c=z, cmap=cmap, marker='o')
+    
+    # Add color bar to indicate cost values
+    fig.colorbar(scatter, ax=ax, label='Cost')
+    
+    ax.set_xlabel('X Coordinate')
+    ax.set_ylabel('Y Coordinate')
+    ax.set_zlabel('Cost')
+    ax.set_title('3D Cost Map')
+    plt.show()
+
 ### RUN THE CODE
 start_time = time.time()  # Start timing for execution time measurement 
 print("Generating cost map...")
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(main_dir, "config", "obstacles_1.csv")
+file_path = os.path.join(main_dir, "config", file_path)
 
 obstacles = load_obstacles(file_path)
 coordinates = np.array([[x, y] for x, y, _ in obstacles])
@@ -195,12 +220,22 @@ points_inside_convex = generate_grid(hull_points, GRID_SIZE)
 Start_point = find_gate("first")  
 Goal_point = find_gate("last")  
 points_with_cost = add_costs(obstacles, points_inside_convex)
+# The maximum and minimum cost points before cost scaling
+print("Max Cost: ", max(points_with_cost, key=lambda point: point[2]))
+print("Min cost: ", min(points_with_cost, key=lambda point: point[2]))
 
 end_time = time.time()  # End timing for execution time measurement
 print("Cost map generated successfully.")
 print(f"Cost map execution time: {end_time - start_time:.3f} seconds")
 
+
 # Plot the results
 plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Goal_point)
+plot_3d_cost_map(points_with_cost)
 
+# The maximum and minimum cost points after cost scaling
 points_with_cost = cost_scaling(points_with_cost)
+print("Max Cost: ", points_with_cost[:, 2].max())
+min_cost_index = points_with_cost[:, 2].argmin()
+print("Min cost: ", points_with_cost[min_cost_index][2])
+

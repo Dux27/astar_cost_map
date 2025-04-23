@@ -6,7 +6,7 @@ from CostMap import Start_point, Goal_point, points_with_cost, GRID_SIZE, MAX_CO
 import time
 
 ### CONSTANTS
-MAX_STEP_SIZE = 0.3  # Maximum step size for the pathfinding algorithm
+MAX_STEP_SIZE = 3.0 # Maximum step size for the pathfinding algorithm
 
 def euclidean_distance(point1, point2):
     return np.linalg.norm(np.array(point1) - np.array(point2))
@@ -99,8 +99,11 @@ def plot_cost_map_with_path(points_with_cost, path=None):
     cbar.set_ticks([0, MAX_COST])  # Set ticks at the minimum and maximum values
     cbar.set_ticklabels(['Low', 'High'])  # Label the ticks as "Low" and "High"
 
+    SCALE_FACTOR = 50
+    marker_size = int(5 + (GRID_SIZE * SCALE_FACTOR))
+
     # Plot the cost map
-    plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap=cmap, label='Cost Points')
+    plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap=cmap, label='Cost Points', s=marker_size)
     plt.scatter(*start_nearest, color='red', label='Start')
     plt.scatter(*goal_nearest, color='red', label='Goal')
     plt.xlabel('X Coordinate')
