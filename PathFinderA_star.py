@@ -6,7 +6,7 @@ from CostMap import Start_point, Goal_point, points_with_cost, GRID_SIZE, MAX_CO
 import time
 
 ### CONSTANTS
-MAX_STEP_SIZE = 3.0 # Maximum step size for the pathfinding algorithm
+MAX_STEP_SIZE = 0.3 # Maximum step size for the pathfinding algorithm
 
 def euclidean_distance(point1, point2):
     return np.linalg.norm(np.array(point1) - np.array(point2))

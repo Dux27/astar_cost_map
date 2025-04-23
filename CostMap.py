@@ -9,10 +9,10 @@ import csv
 import time  
 from mpl_toolkits.mplot3d import Axes3D  # Import for 3D plotting
 
-file_path = "obstacles_2.csv"  
+file_path = "obstacles_1.csv"  
 
 ### CONSTANTS
-GRID_SIZE = 0.1               # Size of each grid cell
+GRID_SIZE = 0.2               # Size of each grid cell
 DISTANCE_RATE = 2.5             # Rate at which distance affects cost
 MAX_COST = 5.0                  # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 4.0     # Maximum distance to consider an obstacle in cost calculation
@@ -138,6 +138,11 @@ def cost_scaling(points_with_cost):
     
     return points_with_cost
 
+def remove_zeros(points_with_cost):
+    """Remove points with zero cost"""
+    points_with_cost = points_with_cost[points_with_cost[:, 2] != 0]
+    return points_with_cost
+
 def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, finish_point):
     """Plot the obstacles, convex hull, and the cost map with gradient color scale"""
     fig, ax = plt.subplots()  
@@ -219,7 +224,9 @@ points_inside_convex = generate_grid(hull_points, GRID_SIZE)
 
 Start_point = find_gate("first")  
 Goal_point = find_gate("last")  
+
 points_with_cost = add_costs(obstacles, points_inside_convex)
+points_with_cost = remove_zeros(points_with_cost) 
 # The maximum and minimum cost points before cost scaling
 print("Max Cost: ", max(points_with_cost, key=lambda point: point[2]))
 print("Min cost: ", min(points_with_cost, key=lambda point: point[2]))
@@ -227,7 +234,6 @@ print("Min cost: ", min(points_with_cost, key=lambda point: point[2]))
 end_time = time.time()  # End timing for execution time measurement
 print("Cost map generated successfully.")
 print(f"Cost map execution time: {end_time - start_time:.3f} seconds")
-
 
 # Plot the results
 plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Goal_point)
