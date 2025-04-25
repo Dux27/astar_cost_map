@@ -24,6 +24,5 @@ python PathFinderA_star.py
 ```
 
 ### Output
-![Figure_1](https://github.com/user-attachments/assets/6a0871ea-3a3e-4cd2-948a-fe5d81df9400)
-![Figure_2](https://github.com/user-attachments/assets/aa64aa6b-6941-4bb9-bc2a-16524d7ff496)
-
+![Figure_1](https://github.com/user-attachments/assets/01faa096-8a22-4269-81bd-1af7bdce2bf2)
+![Figure_2](https://github.com/user-attachments/assets/98c7869c-5fec-4065-a1fe-8ca7599dd10d)
