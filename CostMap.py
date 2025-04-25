@@ -9,7 +9,7 @@ import csv
 import time  
 from mpl_toolkits.mplot3d import Axes3D  # Import for 3D plotting
 
-file_path = "obstacles_1.csv"  
+file_path = "obstacles_2.csv"  
 
 ### CONSTANTS
 GRID_SIZE = 0.2               # Size of each grid cell
@@ -117,16 +117,24 @@ def find_gate(gate_name: str):
     red_path = create_path_from_buoys(obstacles, "red_buoy")
     green_path = create_path_from_buoys(obstacles, "green_buoy")
     if gate_name.lower() == "first":
-        last_red = red_path[0]
-        last_green = green_path[0]
+        red = red_path[0]
+        green = green_path[0]
     elif gate_name.lower() == "last":
-        last_red = red_path[-1]
-        last_green = green_path[-1]
+        red = red_path[-1]
+        green = green_path[-1]
     
-    x = (last_red[0] + last_green[0])/2.0
-    y = (last_red[1] + last_green[1])/2.0
+    x = (red[0] + green[0])/2.0
+    y = (red[1] + green[1])/2.0
     
     return x, y
+
+def generate_grid_boundaries(path1, path2):
+    if path1[-1] != path2[-1]:
+        path2 = path2[::-1]  # Reverse path2 if needed to align endpoints
+
+    # Combine the paths to form a closed shape
+    closed_shape = path1 + path2 + [path1[0]]  # Add the starting point of path1 to close the loop
+    return closed_shape
 
 def cost_scaling(points_with_cost):
     """
@@ -138,12 +146,7 @@ def cost_scaling(points_with_cost):
     
     return points_with_cost
 
-def remove_zeros(points_with_cost):
-    """Remove points with zero cost"""
-    points_with_cost = points_with_cost[points_with_cost[:, 2] != 0]
-    return points_with_cost
-
-def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, finish_point):
+def plot_cost_map(obstacles, coordinates, hull, points_with_cost, red_path, green_path):
     """Plot the obstacles, convex hull, and the cost map with gradient color scale"""
     fig, ax = plt.subplots()  
     # Plot the convex hull boundaries
@@ -172,9 +175,8 @@ def plot_cost_map(obstacles, coordinates, hull, points_with_cost, start_point, f
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])  
     fig.colorbar(sm, ax=ax, label='Cost')
+    
     # Plot connection lines between red and green buoys
-    red_path = create_path_from_buoys(obstacles, "red_buoy")
-    green_path = create_path_from_buoys(obstacles, "green_buoy")
     ax.plot(red_path[:, 0], red_path[:, 1], color='red', linestyle='--', label='Red Path', linewidth=2)
     ax.plot(green_path[:, 0], green_path[:, 1], color='green', linestyle='--', label='Green Path', linewidth=2)
     
@@ -210,7 +212,7 @@ def plot_3d_cost_map(points_with_cost):
     ax.set_title('3D Cost Map')
     plt.show()
 
-### RUN THE CODE
+### RUN THE CODE ###
 start_time = time.time()  # Start timing for execution time measurement 
 print("Generating cost map...")
 
@@ -219,29 +221,34 @@ file_path = os.path.join(main_dir, "config", file_path)
 
 obstacles = load_obstacles(file_path)
 coordinates = np.array([[x, y] for x, y, _ in obstacles])
+
 hull, hull_points = compute_convex_hull(coordinates)
-points_inside_convex = generate_grid(hull_points, GRID_SIZE)
+red_path = create_path_from_buoys(obstacles, "red_buoy")
+green_path = create_path_from_buoys(obstacles, "green_buoy")
+boundry = generate_grid_boundaries(red_path.tolist(), green_path.tolist())
+
+points_inside_convex = generate_grid(boundry, GRID_SIZE)
 
 Start_point = find_gate("first")  
 Goal_point = find_gate("last")  
 
 points_with_cost = add_costs(obstacles, points_inside_convex)
-points_with_cost = remove_zeros(points_with_cost) 
+# points_with_cost = remove_zeros(points_with_cost) 
 # The maximum and minimum cost points before cost scaling
-print("Max Cost: ", max(points_with_cost, key=lambda point: point[2]))
-print("Min cost: ", min(points_with_cost, key=lambda point: point[2]))
+# print("Max Cost: ", max(points_with_cost, key=lambda point: point[2]))
+# print("Min cost: ", min(points_with_cost, key=lambda point: point[2]))
 
 end_time = time.time()  # End timing for execution time measurement
 print("Cost map generated successfully.")
 print(f"Cost map execution time: {end_time - start_time:.3f} seconds")
 
 # Plot the results
-plot_cost_map(obstacles, coordinates, hull, points_with_cost, Start_point, Goal_point)
+plot_cost_map(obstacles, coordinates, hull, points_with_cost, red_path, green_path)
 plot_3d_cost_map(points_with_cost)
 
 # The maximum and minimum cost points after cost scaling
 points_with_cost = cost_scaling(points_with_cost)
-print("Max Cost: ", points_with_cost[:, 2].max())
-min_cost_index = points_with_cost[:, 2].argmin()
-print("Min cost: ", points_with_cost[min_cost_index][2])
+# print("Max Cost: ", points_with_cost[:, 2].max())
+# min_cost_index = points_with_cost[:, 2].argmin()
+# print("Min cost: ", points_with_cost[min_cost_index][2])
 
