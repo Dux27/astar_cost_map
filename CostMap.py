@@ -7,12 +7,11 @@ import numpy as np
 import os
 import csv
 import time  
-from mpl_toolkits.mplot3d import Axes3D  # Import for 3D plotting
 
 file_path = "obstacles_2.csv"  
 
 ### CONSTANTS
-GRID_SIZE = 0.2               # Size of each grid cell
+GRID_SIZE = 0.2                 # Size of each grid cell
 DISTANCE_RATE = 2.5             # Rate at which distance affects cost
 MAX_COST = 5.0                  # Maximum cost value
 MAX_OBSTACLE_DISTANCE = 4.0     # Maximum distance to consider an obstacle in cost calculation

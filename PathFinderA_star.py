@@ -78,7 +78,18 @@ def a_star(start, goal, points_with_cost, max_distance):
 
     return None  # No path found
 
-def plot_cost_map_with_path(points_with_cost, path=None):
+def calculate_resultant_vector(path):
+    vectors = []
+    for i in range(len(path) - 1):
+        x1, y1 = path[i]
+        x2, y2 = path[i + 1]
+        vector = (x2 - x1, y2 - y1)
+        vectors.append(vector)
+            
+    resultant_vector = np.sum(vectors, axis=0) / (len(vectors) - 1) 
+    return resultant_vector
+    
+def plot_cost_map_with_path(points_with_cost, resultant_vector, path=None):
     # Plot the path
     if path:
         path_x, path_y = zip(*path)
@@ -101,6 +112,8 @@ def plot_cost_map_with_path(points_with_cost, path=None):
 
     SCALE_FACTOR = 50
     marker_size = int(5 + (GRID_SIZE * SCALE_FACTOR))
+
+    plt.quiver(0, 0, resultant_vector[0], resultant_vector[1], angles='xy', scale_units='xy', scale=0.2, color='red', linewidth=2)
 
     # Plot the cost map
     plt.scatter(points_with_cost[:, 0], points_with_cost[:, 1], c=points_with_cost[:, 2], cmap=cmap, label='Cost Points', s=marker_size)
@@ -132,4 +145,7 @@ if __name__ == "__main__":
     print("A* algorithm completed.")
     print(f"Path finding execution time: {end_time - start_time:.3f} seconds")
     
-    plot_cost_map_with_path(points_with_cost, path)
+    resultant_vector = calculate_resultant_vector(path)
+    print("The resultant vector of movement: ", resultant_vector)
+    
+    plot_cost_map_with_path(points_with_cost, resultant_vector, path)
