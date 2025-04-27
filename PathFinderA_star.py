@@ -18,18 +18,17 @@ def find_nearest_point(point, points_with_cost):
     return points_with_cost[nearest_index, :2]
 
 def a_star(start, goal, points_with_cost, max_distance):
-    # Define open and closed lists (priority queue)
     open_list = []
     closed_list = set()
 
-    # The dictionary to store the path
+    # Path storing
     came_from = {}
 
-    # The dictionary to store the cost of each point
+    # g_score = distance from current to neighbor point + cost of the neighbor point
     g_score = {tuple(point[:2]): float('inf') for point in points_with_cost}
     g_score[tuple(start)] = 0
 
-    # Heuristic cost from start to goal
+    # f_score = g_score + heuristic (distance from neighbor to goal point)
     f_score = {tuple(point[:2]): float('inf') for point in points_with_cost}
     f_score[tuple(start)] = euclidean_distance(start, goal)
 
@@ -57,7 +56,7 @@ def a_star(start, goal, points_with_cost, max_distance):
             
             # Skip already visited points and those that are too far away
             if neighbor_tuple in closed_list or euclidean_distance(current, neighbor) > max_distance:
-                continue  # Ignore already visited points or those outside the max distance range
+                continue  
             
             # Find the full cost point, which includes [x, y, cost]
             neighbor_row = points_with_cost[np.all(points_with_cost[:, :2] == neighbor, axis=1)][0]
@@ -73,7 +72,7 @@ def a_star(start, goal, points_with_cost, max_distance):
                 f_score[neighbor_tuple] = g_score[neighbor_tuple] + euclidean_distance(neighbor, goal) + neighbor_cost
                 
                 # Add the neighbor to the open list if not already in open list
-                if not any(neighbor_tuple == n[1] for n in open_list):  # Avoid duplicates
+                if not any(neighbor_tuple == node[1] for node in open_list):  # node[0] -> f_score, node[1] -> (x, y)
                     heapq.heappush(open_list, (f_score[neighbor_tuple], neighbor_tuple))
 
     return None  # No path found
@@ -140,6 +139,8 @@ if __name__ == "__main__":
     print(f"Goal point adjusted to: {goal_nearest}")
 
     path = a_star(start_nearest, goal_nearest, points_with_cost, MAX_STEP_SIZE)
+    if not path:
+        print("No path found.")
     
     end_time = time.time()  # End timing for execution time measurement
     print("A* algorithm completed.")
